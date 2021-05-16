@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.16)
+project(Libs LANGUAGES CXX)
+
+set(KAFKA_LIB_DIR ${PROJECT_SOURCE_DIR}/kafka)
+set(STEGO_LIB_DIR ${PROJECT_SOURCE_DIR}/stego)
+
+add_subdirectory(${STEGO_LIB_DIR})
+add_subdirectory(${KAFKA_LIB_DIR})
+
