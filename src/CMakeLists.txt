@@ -11,6 +11,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(RdKafka REQUIRED)
+
+set(ENV{LIBRDKAFKA_ROOT} /usr/include/librdkafka)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
@@ -33,5 +36,5 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Stg
-    rdkafka
+    RdKafka::rdkafka
     modern-cpp-kafka-api)
