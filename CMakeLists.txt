@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project("Stego qt and kafka base backend")
+project("Stego qt and kafka based backend")
 
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib")

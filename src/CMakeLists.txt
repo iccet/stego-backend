@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(StegoBackend LANGUAGES CXX)
+project(StegoBackend LANGUAGES CXX VERSION 0.0.1)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -11,9 +11,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(RdKafka REQUIRED)
+include_directories(${modern-cpp-kafka-api_SOURCE_DIR})
+include_directories(${RdKafka_SOURCE_DIR}/src)
 
-set(ENV{LIBRDKAFKA_ROOT} /usr/include/librdkafka)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
@@ -33,8 +33,12 @@ else()
     add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+        PROJECT_NAME="${PROJECT_NAME}"
+        PROJECT_VERSION="${PROJECT_VERSION}")
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Stg
-    RdKafka::rdkafka
+    rdkafka
     modern-cpp-kafka-api)

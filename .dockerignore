@@ -1,0 +1,6 @@
+*.pyc
+venv
+.idea
+cmake-build*
+[Bb]uild
+.git*

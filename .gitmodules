@@ -4,3 +4,6 @@
 [submodule "lib/kafka"]
 	path = lib/kafka
 	url = https://github.com/morganstanley/modern-cpp-kafka.git
+[submodule "lib/rdkafka"]
+	path = lib/rdkafka
+	url = https://github.com/edenhill/librdkafka.git
