@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "logger.hpp"
+
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QtNetwork/QHostAddress>
@@ -16,14 +18,41 @@ struct Options
     QDnsLookup::Type type;
     kafka::Topic topic;
     QStringList brokerHosts;
+
+    QStringList validate()
+    {
+        QStringList errors;
+
+        if (brokerHosts.empty())
+            errors.append("Brokers address addresses does not set.");
+
+        foreach(auto address, brokerHosts)
+        {
+            bool isValidPort;
+            auto split = address.split(':');
+            split.last().toInt(&isValidPort);
+
+            if (QHostAddress(split.first()).isNull())
+                errors.append(QString("Bad brokers host addresses: %0.").arg(split.first()));
+
+            if (!isValidPort)
+                errors.append(QString("Bad brokers port addresses: %0.").arg(split.last()));
+        }
+
+        if (topic.empty())
+            errors.append("Kafka topic does not set.");
+
+        return errors;
+    }
 };
 
 void parseOptions(QCommandLineParser &parser, Options &options)
 {
+    const QRegExp separator("(,|;)");
     QCommandLineOption topicOption("t", "topic", QCoreApplication::translate("main", "Kafka topic."));
     QCommandLineOption brokersOption({"b", "brokers"},
                                      QCoreApplication::translate("main", "Broker hosts."),
-                                     "0.0.0.0:9092;0.0.0.0:9091");
+                                     "0.0.0.0:9092,0.0.0.0:9091");
 
     parser.addOptions(
     {
@@ -34,24 +63,16 @@ void parseOptions(QCommandLineParser &parser, Options &options)
     parser.parse(QCoreApplication::arguments());
 
     if (parser.isSet(brokersOption))
-    {
-        const auto host = parser.value(brokersOption);
-
-        options.brokerHosts = host.split(';');
-        // TODO validate host pattern
-
-        if (options.brokerHosts.empty())
-            qFatal("Bad brokers host addresses: %s.", host.data());
-    }
-
-    if (options.brokerHosts.empty())
-        qFatal("Brokers host addresses does not set.");
+        options.brokerHosts = parser.value(brokersOption).split(separator);
 
     if (parser.isSet(topicOption))
         options.topic = parser.value(topicOption).toStdString();
 
-    if (options.topic.empty())
-        qFatal("Kafka topic does not set.");
+    auto errors = options.validate();
+
+    if(!errors.empty())
+        qFatal("Invalid program arguments:\n %s",
+               errors.join('\n').toLocal8Bit().data());
 }
 
 int main(int argc, char *argv[])
@@ -72,14 +93,16 @@ int main(int argc, char *argv[])
     std::string brokers = options.brokerHosts.join(';').toStdString();
     kafka::Topic topic = options.topic;
 
+    kafka::Properties props(
+    {
+        {"bootstrap.servers",  brokers},
+        {"enable.idempotence", "true"},
+    });
+
+    qCDebug(logDebug()) << "test";
+
     try
     {
-        kafka::Properties props(
-        {
-            {"bootstrap.servers",  brokers},
-            {"enable.idempotence", "true"},
-        });
-
         kafka::KafkaSyncProducer producer(props);
 
         std::cout << "% Type message value and hit enter to produce message. (empty line to quit)" << std::endl;
