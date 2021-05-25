@@ -1,0 +1,35 @@
+#ifndef STEGO_BACKEND_PRODUCER_HPP
+#define STEGO_BACKEND_PRODUCER_HPP
+
+#include <QObject>
+#include <QEvent>
+#include <QDebug>
+
+#include <iostream>
+
+#include <rdkafka.h>
+
+#include <kafka/KafkaProducer.h>
+
+#include "logger.hpp"
+#include "container_encoded_event.hpp"
+#include "options.hpp"
+
+class EncodedContainerProducer : QObject
+{
+    Q_OBJECT
+
+public:
+    explicit EncodedContainerProducer(const kafka::Properties &options, kafka::Topic topic)
+    : _topic(std::move(topic))
+    , _producer(options)
+    { }
+
+    bool event(QEvent *event) override;
+
+private:
+    kafka::KafkaSyncProducer _producer;
+    kafka::Topic _topic;
+};
+
+#endif //STEGO_BACKEND_PRODUCER_HPP

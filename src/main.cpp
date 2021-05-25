@@ -1,50 +1,11 @@
-#include <rdkafka.h>
-
-#include <kafka/KafkaProducer.h>
-
 #include <iostream>
 
+#include "consumer.hpp"
 #include "logger.hpp"
+#include "options.hpp"
 
 #include <QCoreApplication>
 #include <QCommandLineParser>
-#include <QtNetwork/QHostAddress>
-#include <QtNetwork/QDnsLookup>
-
-struct Options
-{
-    Options() : type(QDnsLookup::A) { }
-
-    QDnsLookup::Type type;
-    kafka::Topic topic;
-    QStringList brokerHosts;
-
-    QStringList validate()
-    {
-        QStringList errors;
-
-        if (brokerHosts.empty())
-            errors.append("Brokers address addresses does not set.");
-
-        foreach(auto address, brokerHosts)
-        {
-            bool isValidPort;
-            auto split = address.split(':');
-            split.last().toInt(&isValidPort);
-
-            if (QHostAddress(split.first()).isNull())
-                errors.append(QString("Bad brokers host addresses: %0.").arg(split.first()));
-
-            if (!isValidPort)
-                errors.append(QString("Bad brokers port addresses: %0.").arg(split.last()));
-        }
-
-        if (topic.empty())
-            errors.append("Kafka topic does not set.");
-
-        return errors;
-    }
-};
 
 void parseOptions(QCommandLineParser &parser, Options &options)
 {
@@ -99,38 +60,8 @@ int main(int argc, char *argv[])
         {"enable.idempotence", "true"},
     });
 
-    qCDebug(logDebug()) << "test";
+    auto consumer = new ContainerConsumer(props, topic);
 
-    try
-    {
-        kafka::KafkaSyncProducer producer(props);
-
-        std::cout << "% Type message value and hit enter to produce message. (empty line to quit)" << std::endl;
-
-        for (std::string line; std::getline(std::cin, line);)
-        {
-            auto record = kafka::ProducerRecord(topic,
-                                                kafka::NullKey,
-                                                kafka::Value(line.c_str(), line.size()));
-
-            try
-            {
-                kafka::Producer::RecordMetadata metadata = producer.send(record);
-                std::cout << "% Message delivered: " << metadata.toString() << std::endl;
-            }
-            catch (const kafka::KafkaException& e)
-            {
-                std::cerr << "% Message delivery failed: " << e.error().message() << std::endl;
-            }
-
-            if (line.empty()) break;
-        }
-
-    }
-    catch (const kafka::KafkaException& e)
-    {
-        std::cerr << "% Unexpected exception caught: " << e.what() << std::endl;
-    }
-
+    consumer->listen();
     return QCoreApplication::exec();
 }
