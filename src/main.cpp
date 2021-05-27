@@ -10,9 +10,15 @@
 void parseOptions(QCommandLineParser &parser, Options &options)
 {
     const QRegExp separator("(,|;)");
-    QCommandLineOption topicOption("t", "topic", QCoreApplication::translate("main", "Kafka topic."));
+    auto helpOption = parser.addHelpOption();
+    auto versionOption = parser.addVersionOption();
+    QCommandLineOption topicOption({"t", "topic"},
+                                   QCoreApplication::translate("main", "Kafka topic."),
+                                   "topic-string");
+
     QCommandLineOption brokersOption({"b", "brokers"},
                                      QCoreApplication::translate("main", "Broker hosts."),
+                                     "brokers-hosts"
                                      "0.0.0.0:9092,0.0.0.0:9091");
 
     parser.addOptions(
@@ -21,7 +27,14 @@ void parseOptions(QCommandLineParser &parser, Options &options)
         topicOption,
     });
 
-    parser.parse(QCoreApplication::arguments());
+    if (!parser.parse(QCoreApplication::arguments()))
+        qFatal("%s", qPrintable(parser.errorText()));
+
+    if (parser.isSet(helpOption))
+        parser.showHelp();
+
+    if (parser.isSet(versionOption))
+        parser.showVersion();
 
     if (parser.isSet(brokersOption))
         options.brokerHosts = parser.value(brokersOption).split(separator);
@@ -33,7 +46,7 @@ void parseOptions(QCommandLineParser &parser, Options &options)
 
     if(!errors.empty())
         qFatal("Invalid program arguments:\n %s",
-               errors.join('\n').toLocal8Bit().data());
+               qPrintable(errors.join('\n')));
 }
 
 int main(int argc, char *argv[])
@@ -46,8 +59,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(PROJECT_VERSION);
 
     parser.setApplicationDescription("Steganography backend based on Qt and Kafka.");
-    parser.addHelpOption();
-    parser.addVersionOption();
 
     parseOptions(parser, options);
 

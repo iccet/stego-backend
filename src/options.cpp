@@ -7,7 +7,7 @@ QStringList Options::validate()
     if (brokerHosts.empty())
         errors.append("Brokers address addresses does not set.");
 
-            foreach(auto address, brokerHosts)
+        foreach(auto address, brokerHosts)
         {
             bool isValidPort;
             auto split = address.split(':');
