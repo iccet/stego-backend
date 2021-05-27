@@ -2,12 +2,13 @@ FROM gcc:latest
 
 ARG BUILD_DIR=build
 
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y build-essential software-properties-common python-dev autotools-dev libblas-dev libicu-dev libbz2-dev libboost-all-dev
+RUN apt-get -q update && apt-get install -y software-properties-common
 RUN apt-add-repository "deb http://security.debian.org/debian-security stretch/updates main"
 
-RUN apt-get update
-RUN apt-get install -y qt5-default cmake libgl1-mesa-dev
+RUN apt-get -q update && apt-get upgrade -y > /dev/null
+RUN apt-get install -y libblas-dev libicu-dev libbz2-dev
+RUN apt-get install -y libboost-dev libboost-program-options-dev libboost-log-dev
+RUN apt-get install -y qt5-default cmake libgl1-mesa-dev librdkafka-dev
 
 WORKDIR /app
 
