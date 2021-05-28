@@ -3,9 +3,10 @@
 
 #include <QEvent>
 
-class ContainerEncodedEvent : QEvent
+class ContainerEncodedEvent : public QEvent
 {
-    QEvent::Type type() const;
+public:
+    ContainerEncodedEvent();
 };
 
 #endif //STEGO_CONTAINER_ENCODED_EVENT_HPP

@@ -1,14 +1,19 @@
 #include "producer.hpp"
 
+EncodedContainerProducer::EncodedContainerProducer(const kafka::Properties &options,
+                                                   kafka::Topic topic)
+    : _topic(std::move(topic))
+    , _producer(options)
+{ }
+
 bool EncodedContainerProducer::event(QEvent *event)
 {
     if (event->type() == QEvent::User)
     {
         auto *containerEncodedEvent = dynamic_cast<ContainerEncodedEvent *>(event);
-        return true;
+        qCDebug(logDebug()) << "test";
     }
-
-    qCDebug(logDebug()) << "test";
+    return true;
 
     try
     {

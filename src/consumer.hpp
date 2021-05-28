@@ -3,24 +3,25 @@
 
 #include <QObject>
 #include <QThread>
+#include <QCoreApplication>
 #include <utility>
 
 #include <rdkafka.h>
 
 #include <kafka/KafkaConsumer.h>
 
+#include "container_encoded_event.hpp"
 #include "logger.hpp"
 #include "options.hpp"
 
-class ContainerConsumer : QObject
+class ContainerConsumer : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ContainerConsumer(const kafka::Properties &options, kafka::Topic topic)
-    : QObject()
-    , _consumer(options)
-    , _topic(std::move(topic)) { }
+    explicit ContainerConsumer(const kafka::Properties &options,
+                               kafka::Topic topic,
+                               QObject *parent);
 
     int listen();
 

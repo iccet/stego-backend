@@ -15,15 +15,12 @@
 #include "container_encoded_event.hpp"
 #include "options.hpp"
 
-class EncodedContainerProducer : QObject
+class EncodedContainerProducer : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit EncodedContainerProducer(const kafka::Properties &options, kafka::Topic topic)
-    : _topic(std::move(topic))
-    , _producer(options)
-    { }
+    explicit EncodedContainerProducer(const kafka::Properties &options, kafka::Topic topic);
 
     bool event(QEvent *event) override;
 

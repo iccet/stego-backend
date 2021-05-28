@@ -1,10 +1,12 @@
 #include <iostream>
 
 #include "consumer.hpp"
+#include "producer.hpp"
 #include "logger.hpp"
 #include "options.hpp"
 
 #include <QCoreApplication>
+#include <QSettings>
 #include <QCommandLineParser>
 
 void parseOptions(QCommandLineParser &parser, Options &options)
@@ -56,9 +58,32 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QCoreApplication::setApplicationName(PROJECT_NAME);
+    QCoreApplication::setOrganizationName("IcCet");
+    QCoreApplication::setOrganizationDomain("iccet.org");
     QCoreApplication::setApplicationVersion(PROJECT_VERSION);
 
+    QSettings settings;
+
+    settings.beginGroup("logging");
+
+    settings.beginGroup("file");
+    settings.setValue("name", "log.txt");
+    settings.setValue("enabled", true);
+    settings.endGroup();
+
+    settings.beginGroup("elastic");
+    settings.setValue("enabled", false);
+    settings.endGroup();
+
+    settings.beginGroup("default");
+    settings.setValue("enabled", true);
+    settings.endGroup();
+
+    settings.endGroup();
+
     parser.setApplicationDescription("Steganography backend based on Qt and Kafka.");
+
+    setupLogging(settings);
 
     parseOptions(parser, options);
 
@@ -71,7 +96,8 @@ int main(int argc, char *argv[])
         {"enable.idempotence", "true"},
     });
 
-    auto consumer = new ContainerConsumer(props, topic);
+    auto producer = new EncodedContainerProducer(props, topic);
+    auto consumer = new ContainerConsumer(props, topic, producer);
 
     consumer->listen();
     return QCoreApplication::exec();

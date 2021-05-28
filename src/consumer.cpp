@@ -1,12 +1,20 @@
 #include "consumer.hpp"
 
+ContainerConsumer::ContainerConsumer(const kafka::Properties &options,
+                                     kafka::Topic topic,
+                                     QObject *parent)
+    : QObject(parent)
+    , _consumer(options)
+    , _topic(std::move(topic))
+    , _thread() { }
+
 int ContainerConsumer::listen()
 {
     try
     {
         _consumer.subscribe({_topic});
 
-        qInfo(consumer(), "Reading messages from topic: %s", _topic.data());
+        qInfo(consumer, "Reading messages from topic: %s", _topic.data());
 
         forever
         {
@@ -17,18 +25,13 @@ int ContainerConsumer::listen()
 
                 if (!record.error())
                 {
-                    std::cout << "% Got a new message..." << std::endl;
-                    std::cout << "    Topic    : " << record.topic() << std::endl;
-                    std::cout << "    Partition: " << record.partition() << std::endl;
-                    std::cout << "    Offset   : " << record.offset() << std::endl;
-                    std::cout << "    Timestamp: " << record.timestamp().toString() << std::endl;
-                    std::cout << "    Headers  : " << kafka::toString(record.headers()) << std::endl;
-                    std::cout << "    Key   [" << record.key().toString() << "]" << std::endl;
-                    std::cout << "    Value [" << record.value().toString() << "]" << std::endl;
+                    qInfo(message, "%s", record.toString().data());
+                    auto event = new ContainerEncodedEvent();
+                    QCoreApplication::sendEvent(parent(), event);
                 }
                 else
                 {
-                    qCritical(consumer()) << record.toString().data();
+                    qCritical(consumer) << record.toString().data();
                 }
             }
         }
@@ -36,6 +39,7 @@ int ContainerConsumer::listen()
     }
     catch (const kafka::KafkaException& e)
     {
-        qCritical(consumer(), "Unexpected exception caught: %s", e.what());
+        qCritical(consumer, "Unexpected exception caught: %s", e.what());
     }
+    Q_UNREACHABLE();
 }
