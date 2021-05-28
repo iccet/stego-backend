@@ -9,6 +9,7 @@
 
 #include <kafka/KafkaConsumer.h>
 
+#include "logger.hpp"
 #include "options.hpp"
 
 class ContainerConsumer : QObject

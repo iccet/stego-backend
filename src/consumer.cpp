@@ -2,11 +2,13 @@
 
 int ContainerConsumer::listen()
 {
-    try {
+    try
+    {
         _consumer.subscribe({_topic});
 
-        std::cout << "% Reading messages from topic: " << _topic << std::endl;
-        while (true)
+        qInfo(consumer(), "Reading messages from topic: %s", _topic.data());
+
+        forever
         {
             auto records = _consumer.poll(std::chrono::milliseconds(100));
             for (const auto& record: records)
@@ -23,9 +25,10 @@ int ContainerConsumer::listen()
                     std::cout << "    Headers  : " << kafka::toString(record.headers()) << std::endl;
                     std::cout << "    Key   [" << record.key().toString() << "]" << std::endl;
                     std::cout << "    Value [" << record.value().toString() << "]" << std::endl;
-                } else
+                }
+                else
                 {
-                    std::cerr << record.toString() << std::endl;
+                    qCritical(consumer()) << record.toString().data();
                 }
             }
         }
@@ -33,6 +36,6 @@ int ContainerConsumer::listen()
     }
     catch (const kafka::KafkaException& e)
     {
-        std::cerr << "% Unexpected exception caught: " << e.what() << std::endl;
+        qCritical(consumer(), "Unexpected exception caught: %s", e.what());
     }
 }
