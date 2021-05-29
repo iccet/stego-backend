@@ -10,6 +10,7 @@
 
 #include <kafka/KafkaConsumer.h>
 
+#include "stg.hpp"
 #include "container_encoded_event.hpp"
 #include "logger.hpp"
 #include "options.hpp"

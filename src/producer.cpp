@@ -8,41 +8,23 @@ EncodedContainerProducer::EncodedContainerProducer(const kafka::Properties &opti
 
 bool EncodedContainerProducer::event(QEvent *event)
 {
-    if (event->type() == QEvent::User)
-    {
-        auto *containerEncodedEvent = dynamic_cast<ContainerEncodedEvent *>(event);
-        qCDebug(logDebug()) << "test";
-    }
-    return true;
+    if (event->type() != QEvent::User)
+        return QObject::event(event);
+
+    auto *containerEncodedEvent = dynamic_cast<ContainerEncodedEvent *>(event);
+
+    auto record = kafka::ProducerRecord(_topic,
+                                        kafka::NullKey,
+                                        containerEncodedEvent->_data);
 
     try
     {
-        std::cout << "% Type message value and hit enter to produce message. (empty line to quit)" << std::endl;
-
-        for (std::string line; std::getline(std::cin, line);)
-        {
-            auto record = kafka::ProducerRecord(_topic,
-                                                kafka::NullKey,
-                                                kafka::Value(line.c_str(), line.size()));
-
-            try
-            {
-                kafka::Producer::RecordMetadata metadata = _producer.send(record);
-                std::cout << "% Message delivered: " << metadata.toString() << std::endl;
-            }
-            catch (const kafka::KafkaException& e)
-            {
-                std::cerr << "% Message delivery failed: " << e.error().message() << std::endl;
-            }
-
-            if (line.empty()) break;
-        }
-
+        auto metadata = _producer.send(record);
+        qInfo(message, "Message delivered: %s", metadata.toString().data());
     }
     catch (const kafka::KafkaException& e)
     {
-        std::cerr << "% Unexpected exception caught: " << e.what() << std::endl;
+        qCritical(producer, "Message delivery failed: %s", e.error().message().c_str());
     }
 
-    return QObject::event(event);
 }

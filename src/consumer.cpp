@@ -26,7 +26,7 @@ int ContainerConsumer::listen()
                 if (!record.error())
                 {
                     qInfo(message, "%s", record.toString().data());
-                    auto event = new ContainerEncodedEvent();
+                    auto event = new ContainerEncodedEvent(record.value());
                     QCoreApplication::sendEvent(parent(), event);
                 }
                 else

@@ -8,6 +8,7 @@ set(TESTS_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 include_directories(${LIB_DIR})
+include_directories(${Stg_SOURCE_DIR})
 
 add_subdirectory(${SOURCE_DIR})
 add_subdirectory(${LIB_DIR})
