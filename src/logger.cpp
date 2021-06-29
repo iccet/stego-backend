@@ -5,6 +5,7 @@ Q_LOGGING_CATEGORY(logInfo, "INFO")
 Q_LOGGING_CATEGORY(logWarning, "WARN")
 Q_LOGGING_CATEGORY(logCritical,"CRIT")
 
+Q_LOGGING_CATEGORY(rdkafka, "rdkafka")
 Q_LOGGING_CATEGORY(producer, "stego.producer")
 Q_LOGGING_CATEGORY(consumer, "stego.consumer")
 
@@ -15,6 +16,7 @@ const QtMessageHandler defaultMessageHandler = qInstallMessageHandler(nullptr);
 
 void setupLogging(const QSettings &settings)
 {
+    kafka::KafkaClient::setGlobalLogger(defaultLogger);
     logFile.reset(new QFile(settings.value("logging/file/name").toString()));
 
     if (Q_UNLIKELY(!logFile.data()->open(QFile::Append | QIODevice::Text | QIODevice::WriteOnly)))
@@ -32,6 +34,9 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
     if(settings.value("logging/file/enabled").value<bool>() && Q_LIKELY(logFile.data()->isOpen()))
         fileMessageHandler(type, context, message);
+
+    if(settings.value("logging/elastic/enabled").value<bool>())
+        elasticMessageHandler(type, context, message);
 }
 
 void fileMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
@@ -40,6 +45,29 @@ void fileMessageHandler(QtMsgType type, const QMessageLogContext &context, const
     QMutexLocker lock(&mutex);
 
     QTextStream out(logFile.data());
-    out << qPrintable(qFormatLogMessage(type, context, message)) << Qt::endl;
+    out << qPrintable(qFormatLogMessage(type, context, message)) << endl;
     out.flush();
+}
+
+void elasticMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+}
+
+void defaultLogger(int level, const char* /*filename*/, int /*lineno*/, const char* msg)
+{
+    switch (level)
+    {
+        case LOG_EMERG: qCCritical(rdkafka, "%s", msg); break;
+        case LOG_CRIT: qCritical(rdkafka, "%s", msg); break;
+
+        case LOG_ALERT:
+        case LOG_ERR: qCWarning(rdkafka, "%s", msg); break;
+        case LOG_WARNING: qWarning(rdkafka, "%s", msg); break;
+
+        case LOG_NOTICE: qCInfo(rdkafka, "%s", msg); break;
+        case LOG_INFO: qInfo(rdkafka, "%s", msg); break;
+
+        case LOG_DEBUG: qDebug(rdkafka, "%s", msg); break;
+        default: Q_UNREACHABLE();
+    }
 }

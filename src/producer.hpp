@@ -15,7 +15,7 @@
 #include "container_encoded_event.hpp"
 #include "options.hpp"
 
-class EncodedContainerProducer : public QObject
+class EncodedContainerProducer : public QObject, public kafka::KafkaSyncProducer
 {
     Q_OBJECT
 
@@ -25,7 +25,6 @@ public:
     bool event(QEvent *event) override;
 
 private:
-    kafka::KafkaSyncProducer _producer;
     kafka::Topic _topic;
 };
 

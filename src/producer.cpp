@@ -2,8 +2,9 @@
 
 EncodedContainerProducer::EncodedContainerProducer(const kafka::Properties &options,
                                                    kafka::Topic topic)
-    : _topic(std::move(topic))
-    , _producer(options)
+    : QObject()
+    , kafka::KafkaSyncProducer(options)
+    , _topic(std::move(topic))
 { }
 
 bool EncodedContainerProducer::event(QEvent *event)
@@ -19,7 +20,7 @@ bool EncodedContainerProducer::event(QEvent *event)
 
     try
     {
-        auto metadata = _producer.send(record);
+        auto metadata = send(record);
         qInfo(message, "Message delivered: %s", metadata.toString().data());
     }
     catch (const kafka::KafkaException& e)

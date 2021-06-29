@@ -1,6 +1,8 @@
 #ifndef STEGO_CONTAINER_ENCODED_EVENT_HPP
 #define STEGO_CONTAINER_ENCODED_EVENT_HPP
 
+#include <rdkafka.h>
+
 #include <QEvent>
 #include <kafka/ConsumerRecord.h>
 #include <kafka/Types.h>
