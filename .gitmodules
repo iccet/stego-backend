@@ -7,3 +7,9 @@
 [submodule "lib/rdkafka"]
 	path = lib/rdkafka
 	url = https://github.com/edenhill/librdkafka.git
+[submodule "lib/elasticlient"]
+	path = lib/elasticlient
+	url = https://github.com/seznam/elasticlient.git
+[submodule "lib/httpstatuscodes"]
+	path = lib/httpstatuscodes
+	url = https://github.com/j-ulrich/http-status-codes-cpp.git

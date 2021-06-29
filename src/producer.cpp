@@ -28,4 +28,5 @@ bool EncodedContainerProducer::event(QEvent *event)
         qCritical(producer, "Message delivery failed: %s", e.error().message().c_str());
     }
 
+    return QObject::event(event);
 }

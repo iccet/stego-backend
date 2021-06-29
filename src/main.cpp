@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     settings.endGroup();
 
     settings.beginGroup("elastic");
-    settings.setValue("enabled", false);
+    settings.setValue("enabled", true);
     settings.endGroup();
 
     settings.beginGroup("default");

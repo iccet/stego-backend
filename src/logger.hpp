@@ -4,9 +4,16 @@
 #include <rdkafka.h>
 #include <rdkafkacpp.h>
 
+#include <elasticlient/client.h>
+#include <elasticlient/logging.h>
+#include <cpr/response.h>
+
+#include "../lib/httpstatuscodes/HttpStatusCodes_Qt.h"
 #include <kafka/KafkaClient.h>
 
 #include <QLoggingCategory>
+#include <QJsonObject>
+#include <QJsonDocument>
 #include <QMutex>
 #include <QSettings>
 #include <QFile>
@@ -33,6 +40,8 @@ extern const QtMessageHandler defaultMessageHandler;
 
 void fileMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
 void elasticMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message);
+
+void logCallback(elasticlient::LogLevel logLevel, const std::string &msg);
 
 void defaultLogger(int level, const char* filename, int lineno, const char* msg);
 

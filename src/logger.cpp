@@ -17,6 +17,7 @@ const QtMessageHandler defaultMessageHandler = qInstallMessageHandler(nullptr);
 void setupLogging(const QSettings &settings)
 {
     kafka::KafkaClient::setGlobalLogger(defaultLogger);
+    elasticlient::setLogFunction(logCallback);
     logFile.reset(new QFile(settings.value("logging/file/name").toString()));
 
     if (Q_UNLIKELY(!logFile.data()->open(QFile::Append | QIODevice::Text | QIODevice::WriteOnly)))
@@ -51,6 +52,39 @@ void fileMessageHandler(QtMsgType type, const QMessageLogContext &context, const
 
 void elasticMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
+    elasticlient::Client client({"http://localhost:9200/"});
+
+    QJsonObject body { { "message", qPrintable(qFormatLogMessage(type, context, message)) } };
+    QJsonDocument doc(body);
+
+    cpr::Response response = client.index("stego-backend",
+                                          "docType",
+                                          "docId",
+                                          doc.toJson(QJsonDocument::Compact).data());
+
+    switch (response.status_code)
+    {
+        case HttpStatus::Code::OK:
+        case HttpStatus::Code::Created: break;
+        default: Q_ASSERT(false);
+    }
+}
+
+void logCallback(elasticlient::LogLevel logLevel, const std::string &msg)
+{
+    Q_UNUSED(logLevel);
+    Q_UNUSED(msg);
+    return;
+    using elasticlient::LogLevel;
+    switch (logLevel)
+    {
+        case LogLevel::FATAL:
+        case LogLevel::ERROR:
+        case LogLevel::WARNING:
+        case LogLevel::INFO:
+        case LogLevel::DEBUG:
+        default: Q_UNREACHABLE();
+    }
 }
 
 void defaultLogger(int level, const char* /*filename*/, int /*lineno*/, const char* msg)

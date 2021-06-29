@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(${modern-cpp-kafka-api_SOURCE_DIR})
 include_directories(${Stg_SOURCE_DIR})
+include_directories(${ELASTICLIENT_INCLUDE_DIRS})
 include_directories(${RdKafka_SOURCE_DIR}/src)
 include_directories(${RdKafka_SOURCE_DIR}/src-cpp)
 
@@ -42,6 +43,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Network
+    ${ELASTICLIENT_LIBRARIES}
     Stg
     rdkafka
     modern-cpp-kafka-api)
