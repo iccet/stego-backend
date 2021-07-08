@@ -17,6 +17,8 @@
 #include <QMutex>
 #include <QSettings>
 #include <QFile>
+#include <QUuid>
+#include <QMetaEnum>
 
 extern QScopedPointer<QFile> logFile;
 
@@ -31,6 +33,8 @@ Q_DECLARE_LOGGING_CATEGORY(producer)
 Q_DECLARE_LOGGING_CATEGORY(consumer)
 
 Q_DECLARE_LOGGING_CATEGORY(message)
+
+QString msgTypeToString(QtMsgType type);
 
 void setupLogging(const QSettings &settings);
 

@@ -11,7 +11,7 @@ Q_LOGGING_CATEGORY(consumer, "stego.consumer")
 
 Q_LOGGING_CATEGORY(message, "stego.message")
 
-QScopedPointer<QFile> logFile;
+QScopedPointer<QFile> logFile { };
 const QtMessageHandler defaultMessageHandler = qInstallMessageHandler(nullptr);
 
 void setupLogging(const QSettings &settings)
@@ -52,21 +52,42 @@ void fileMessageHandler(QtMsgType type, const QMessageLogContext &context, const
 
 void elasticMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    elasticlient::Client client({"http://localhost:9200/"});
+	auto uri = qgetenv("ELASTIC_URI").toStdString();
+	elasticlient::Client client({std::move(uri)});
+    QJsonObject body {
+        { "message", message },
+        { "@timestamp", QDateTime::currentDateTime().toString(Qt::ISODate) },
+        { "category", context.category },
+        { "msg_type", msgTypeToString(type) },
 
-    QJsonObject body { { "message", qPrintable(qFormatLogMessage(type, context, message)) } };
+#ifdef QT_DEBUG
+		{ "version", context.version },
+		{ "function", context.function },
+		{ "file", context.file },
+        { "line", context.line },
+#endif
+    };
     QJsonDocument doc(body);
 
     cpr::Response response = client.index("stego-backend",
-                                          "docType",
-                                          "docId",
-                                          doc.toJson(QJsonDocument::Compact).data());
+                                           "_doc",
+                                           qPrintable(QUuid::createUuid().toString(QUuid::WithoutBraces)),
+                                           doc.toJson(QJsonDocument::Compact).data());
 
-    switch (response.status_code)
+    Q_ASSERT_X(HttpStatus::isSuccessful(response.status_code),
+               "elastic index request",
+               response.text.c_str());
+}
+
+QString msgTypeToString(QtMsgType type)
+{
+    switch (type)
     {
-        case HttpStatus::Code::OK:
-        case HttpStatus::Code::Created: break;
-        default: Q_ASSERT(false);
+        case QtCriticalMsg: return "Critical";
+        case QtDebugMsg: return "Debug";
+        case QtFatalMsg: return "Fatal";
+        case QtInfoMsg: return "Info";
+        case QtWarningMsg: return "Warning";
     }
 }
 
