@@ -8,7 +8,7 @@
 #include <elasticlient/logging.h>
 #include <cpr/response.h>
 
-#include "../lib/httpstatuscodes/HttpStatusCodes_Qt.h"
+#include <httpstatuscodes/HttpStatusCodes_Qt.h>
 #include <kafka/KafkaClient.h>
 
 #include <QLoggingCategory>
