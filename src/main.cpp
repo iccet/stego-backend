@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         {"enable.idempotence", "true"},
     });
 
-    auto producer = new EncodedContainerProducer(props, topic);
+    auto producer = new EncodedContainerProducer(props);
     auto consumer = new ContainerConsumer(props, topic, producer);
 
     consumer->listen();

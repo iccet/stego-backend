@@ -25,8 +25,18 @@ int ContainerConsumer::listen()
 
                 if (!record.error())
                 {
-                    qInfo(message, "%s", record.toString().data());
-                    auto event = new ContainerEncodedEvent(record.value());
+					HeaderEncoderBuilder::Headers headers;
+					for(auto &header: record.headers())
+					{
+						headers.insert(header.key, header.value);
+					}
+
+					headers.insert("EncoderType", kafka::Value("Lsb"));
+
+					auto encoder = HeaderEncoderBuilder(headers).build();
+
+                    qInfo(backend(), "%s", record.toString().data());
+                    auto event = new ContainerEvent(kafka::Topic(), record.value());
                     QCoreApplication::sendEvent(parent(), event);
                 }
                 else

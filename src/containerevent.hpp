@@ -7,12 +7,16 @@
 #include <kafka/ConsumerRecord.h>
 #include <kafka/Types.h>
 
-class ContainerEncodedEvent : public QEvent
+#include <stg.hpp>
+
+class ContainerEvent : public QEvent
 {
 public:
-    explicit ContainerEncodedEvent(const kafka::Value &data);
+    explicit ContainerEvent(kafka::Topic  topic, const kafka::Value& data);
 
-    kafka::Value _data;
+    QScopedPointer<Stg::AbstractEncoder> Encoder;
+	kafka::Topic Topic;
+    kafka::Value Data;
 };
 
 #endif //STEGO_CONTAINER_ENCODED_EVENT_HPP

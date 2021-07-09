@@ -1,10 +1,8 @@
 #include "producer.hpp"
 
-EncodedContainerProducer::EncodedContainerProducer(const kafka::Properties &options,
-                                                   kafka::Topic topic)
+EncodedContainerProducer::EncodedContainerProducer(const kafka::Properties &options)
     : QObject()
     , kafka::KafkaSyncProducer(options)
-    , _topic(std::move(topic))
 { }
 
 bool EncodedContainerProducer::event(QEvent *event)
@@ -12,16 +10,22 @@ bool EncodedContainerProducer::event(QEvent *event)
     if (event->type() != QEvent::User)
         return QObject::event(event);
 
-    auto *containerEncodedEvent = dynamic_cast<ContainerEncodedEvent *>(event);
+    auto *containerEvent = dynamic_cast<ContainerEvent*>(event);
 
-    auto record = kafka::ProducerRecord(_topic,
-                                        kafka::NullKey,
-                                        containerEncodedEvent->_data);
+	auto &data = containerEvent->Data;
+	auto &encoder = containerEvent->Encoder;
+
+    auto container = encoder->decode((const uchar*)data.data(),
+									 static_cast<int>(data.size()));
+
+    auto record = kafka::ProducerRecord(containerEvent->Topic,
+                                        kafka::NullKey, 
+										kafka::Value(container.data(), container.size()));
 
     try
     {
         auto metadata = send(record);
-        qInfo(message, "Message delivered: %s", metadata.toString().data());
+        qInfo(backend, "Message delivered: %s", metadata.toString().data());
     }
     catch (const kafka::KafkaException& e)
     {

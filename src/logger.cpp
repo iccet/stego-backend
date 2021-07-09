@@ -1,15 +1,13 @@
 #include "logger.hpp"
 
-Q_LOGGING_CATEGORY(logDebug, "DEBUG")
-Q_LOGGING_CATEGORY(logInfo, "INFO")
-Q_LOGGING_CATEGORY(logWarning, "WARN")
-Q_LOGGING_CATEGORY(logCritical,"CRIT")
-
 Q_LOGGING_CATEGORY(rdkafka, "rdkafka")
+Q_LOGGING_CATEGORY(backend, "stego.backend")
+
 Q_LOGGING_CATEGORY(producer, "stego.producer")
 Q_LOGGING_CATEGORY(consumer, "stego.consumer")
 
-Q_LOGGING_CATEGORY(message, "stego.message")
+Q_LOGGING_CATEGORY(decoder, "stego.decoder")
+Q_LOGGING_CATEGORY(encode, "stego.encoder")
 
 QScopedPointer<QFile> logFile { };
 const QtMessageHandler defaultMessageHandler = qInstallMessageHandler(nullptr);
@@ -21,7 +19,7 @@ void setupLogging(const QSettings &settings)
     logFile.reset(new QFile(settings.value("logging/file/name").toString()));
 
     if (Q_UNLIKELY(!logFile.data()->open(QFile::Append | QIODevice::Text | QIODevice::WriteOnly)))
-        qWarning(logWarning, "Log file %s not found", qPrintable(logFile.data()->fileName()));
+        qWarning(backend, "Log file %s not found", qPrintable(logFile.data()->fileName()));
 
     qInstallMessageHandler(messageHandler);
 }

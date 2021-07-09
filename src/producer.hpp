@@ -11,21 +11,20 @@
 
 #include <kafka/KafkaProducer.h>
 
+#include "containerevent.hpp"
 #include "logger.hpp"
-#include "container_encoded_event.hpp"
 #include "options.hpp"
+
+#include <stg.hpp>
 
 class EncodedContainerProducer : public QObject, public kafka::KafkaSyncProducer
 {
     Q_OBJECT
 
 public:
-    explicit EncodedContainerProducer(const kafka::Properties &options, kafka::Topic topic);
+    explicit EncodedContainerProducer(const kafka::Properties &options);
 
     bool event(QEvent *event) override;
-
-private:
-    kafka::Topic _topic;
 };
 
 #endif //STEGO_BACKEND_PRODUCER_HPP

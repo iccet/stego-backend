@@ -10,10 +10,12 @@
 
 #include <kafka/KafkaConsumer.h>
 
-#include "stg.hpp"
-#include "container_encoded_event.hpp"
+#include "containerevent.hpp"
 #include "logger.hpp"
 #include "options.hpp"
+#include "encoderbuilder.hpp"
+
+#include "stg.hpp"
 
 class ContainerConsumer : public QObject
 {
@@ -27,6 +29,7 @@ public:
     int listen();
 
 private:
+
     kafka::KafkaAutoCommitConsumer _consumer;
     kafka::Topic _topic;
     QThread *_thread;
